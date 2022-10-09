@@ -1,15 +1,13 @@
 package com.wang.simplecat;
 
 import com.wang.sevlet.SimpleResponse;
-import io.netty.buffer.ByteBuf;
+import com.wang.util.StaticResourceUtil;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.internal.StringUtil;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.net.URI;
 
 /**
  * @author OccupationalMissing
@@ -62,20 +60,23 @@ public class HttpSimpleResponse implements SimpleResponse {
      */
     @Override
     public void writeStatic(String filePath) throws Exception {
-        URI resource = this.getClass().getResource(filePath).toURI();
-        File file = new File(resource);
-        FileInputStream stream = new FileInputStream(file);
-        byte[] b = new byte[1024];
-        int c = 0;
-        while ((c = stream.read(b)) != -1) {
-            ByteBuf buffer = Unpooled.copiedBuffer(b);
-            FullHttpResponse response = new DefaultFullHttpResponse(
-                    HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buffer
-            );
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html;charset=utf-8");
-            response.headers().set(HttpHeaderNames.ACCEPT_RANGES, "bytes");
-            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, buffer.readableBytes());
-            this.context.writeAndFlush(response);
+        FileInputStream fileInputStream = new FileInputStream(StaticResourceUtil.getAbsolutePath(filePath));
+        int lenth = fileInputStream.available();
+        byte[] b = new byte[lenth];
+        fileInputStream.read(b);
+        fileInputStream.close();
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.wrappedBuffer(b));
+        // 获取响应头
+        HttpHeaders headers = response.headers();
+        // 设置响应体长度
+        headers.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        // 设置缓存过期时间
+        headers.set(HttpHeaderNames.EXPIRES, 0);
+        // 若HTTP请求是长连接，则响应也使用长连接
+        if (HttpUtil.isKeepAlive(request)) {
+            headers.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         }
+        // 将响应写入到Channel
+        context.writeAndFlush(response);
     }
 }
