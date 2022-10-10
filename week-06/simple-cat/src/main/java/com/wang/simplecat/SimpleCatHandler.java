@@ -7,6 +7,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,6 +26,8 @@ public class SimpleCatHandler extends ChannelInboundHandlerAdapter {
      */
     private Map<String, String> nameToClassNameMap;
     
+    private List<String> STATIC_SUFFIXS = Arrays.asList(".html", ".gif", ".png", ".css", ".js");
+    
     public SimpleCatHandler(Map<String, SimpleServlet> nameToServletMap, Map<String, String> nameToClassNameMap) {
         this.nameToServletMap = nameToServletMap;
         this.nameToClassNameMap = nameToClassNameMap;
@@ -34,11 +38,30 @@ public class SimpleCatHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof HttpRequest) {
             HttpRequest request = (HttpRequest) msg;
             String uri = request.uri();
+            
             String servletName = "";
-            if (uri.contains("?") && uri.contains("/")) {
+            // 处理静态资源访问问题
+            if (uri.indexOf("/") == uri.lastIndexOf("/") && !uri.contains("?")) {
+                String filaName = uri.substring(uri.lastIndexOf("/") + 1);
+                boolean ifIndex = filaName.equals( "index");
+                if (uri.length() > 1 && !uri.contains(".") && !ifIndex) {
+                    servletName = "";
+                } else {
+                    SimpleResponse res = new HttpSimpleResponse(request, ctx);
+                    if (ifIndex) {
+                        res.writeStatic("static/index.html");
+                    } else {
+                        for (String suffix : STATIC_SUFFIXS) {
+                            if (filaName.contains(suffix)) {
+                                res.writeStatic("static/" + filaName);
+                            }
+                        }
+                    }
+                    ctx.close();
+                    return;
+                }
+            } else if (uri.contains("?") && uri.contains("/")) {
                 servletName = uri.substring(uri.lastIndexOf("/") + 1, uri.indexOf("?"));
-            } else if (uri.contains("indexservlet")) {
-                servletName = "indexservlet";
             }
             
             SimpleServlet servlet = new DefaultSimpleServlet();
@@ -61,7 +84,7 @@ public class SimpleCatHandler extends ChannelInboundHandlerAdapter {
                         }
                     }
                 }
-            } //  end-else if
+            }
             
             // 代码走到这里，servlet肯定不空
             SimpleRequest req = new HttpSimpleRequest(request);

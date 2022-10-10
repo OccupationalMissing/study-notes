@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.internal.StringUtil;
 
+import java.io.File;
 import java.io.FileInputStream;
 
 /**
@@ -60,9 +61,13 @@ public class HttpSimpleResponse implements SimpleResponse {
      */
     @Override
     public void writeStatic(String filePath) throws Exception {
-        FileInputStream fileInputStream = new FileInputStream(StaticResourceUtil.getAbsolutePath(filePath));
-        int lenth = fileInputStream.available();
-        byte[] b = new byte[lenth];
+        File file = new File(StaticResourceUtil.getAbsolutePath(filePath));
+        if (!file.exists()) {
+            file = new File(StaticResourceUtil.getAbsolutePath("static/404.html"));
+        }
+        
+        FileInputStream fileInputStream = new FileInputStream(file);
+        byte[] b = new byte[fileInputStream.available()];
         fileInputStream.read(b);
         fileInputStream.close();
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.wrappedBuffer(b));
