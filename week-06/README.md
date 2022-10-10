@@ -11,10 +11,33 @@ simple-cat 项目为自定义Web容器，simple-cat-test 为测试项目。
     </dependency>
 </dependencies>
 ```
+2. 通过 server.xml 文件配置自端口号和自定义 Servlet 指定包
+ ```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<server>
+    <port>7777</port>
+    <base-package>com.wang.simplecat.webapp</base-package>
+</server>
+```
+3. 自定义servlet  
+测试项目中共实现了定义三个自定义 servlet : MyServlet 、MyServlet2 、IndexServlet
 
-2. 自定义servlet  
-测试项目中共定义三个 servlet : MyServlet 、MyServlet2 、IndexServlet
-
-3. 启动服务 ： MyApplication.java
-
-4. 测试结果 
+4. 启动服务 ： 通过 MyApplication.java 启动容器
+```java
+public class MyApplication {
+    public static void main(String[] args) throws Exception {
+        SimpleCat.run(args);
+    }
+}
+```
+5. 测试结果 
+* MyServlet ： 课程演示自定义Servlet，浏览器访问 http://localhost:7777/myservlet?name=pikachu ，结果如下图
+![myservlet](img/myservlet1.png)
+* MyServlet2 : 展示全部参数， 浏览器访问 http://localhost:7777/myservlet?username=admin&pwd=123456 ,结果如下图
+![myservlet2](img/myservlet2.png)
+* IndexServlet : 展示默认静态文件，浏览器访问 http://localhost:7777/indexservlet ,展示默认 index.html 页面，结果如下图  
+![index1](img/index1.png)  
+也可指定访问的静态服务文件名， 浏览器访问 http://localhost:7777/indexservlet/index.html ,结果如下图  
+![index2](img/index2.png)  
+访问默认文件 cat.gif ,浏览器访问 http://localhost:7777/indexservlet/cat.gif  ,结果如下图
+![index3](img/index3.png)
