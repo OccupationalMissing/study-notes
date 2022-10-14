@@ -20,7 +20,7 @@ simple-cat 项目为自定义Web容器，simple-cat-test 为测试项目。
 </server>
 ```
 3. 自定义servlet  
-测试项目中共实现了定义三个自定义 servlet : MyServlet 、MyServlet2
+测试项目中共实现了定义 2 个自定义 servlet : MyServlet 、MyServlet2
 
 4. 启动服务 ： 通过 MyApplication.java 启动容器
 ```java
@@ -37,7 +37,7 @@ public class MyApplication {
 ![myservlet2](img/myservlet2.png)
 * 访问静态资源 : http://localhost:7777/index ,展示默认 index.html 页面，结果如下图  
 ![index1](img/index1.png)  
-也可指定访问的静态服务文件名， 浏览器访问 http://localhost:7777/index.html ,结果如下图  
+也可指定静态资源文件名访问， 浏览器访问 http://localhost:7777/index.html ,结果如下图  
 ![index2](img/index2.png)  
 访问默认文件 cat.gif ,浏览器访问 http://localhost:7777/cat.gif  ,结果如下图
 ![index3](img/index3.png)  
